@@ -3,14 +3,11 @@ FROM oven/bun:1 AS build
 
 WORKDIR /app
 
-# Copy package files and install dependencies
-COPY package.json ./
-# Copy lockfile if it exists (bun uses .lockb extension)
-COPY bun.lock ./ 2>/dev/null || echo "No lockfile found"
-RUN bun install
-
-# Copy source code and build the application
+# Copy source code including package files
 COPY . .
+
+# Install dependencies and build
+RUN bun install
 RUN bun run build
 
 # Production stage with Nginx to serve static files
