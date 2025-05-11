@@ -15,8 +15,17 @@ RUN bun run build
 # Production stage with Nginx to serve static files
 FROM nginx:alpine AS production
 
-# Copy nginx configuration
-COPY --from=build /app/nginx.conf /etc/nginx/conf.d/default.conf 2>/dev/null || echo "server { listen 80; root /usr/share/nginx/html; location / { try_files \$uri \$uri/ /index.html; } }" > /etc/nginx/conf.d/default.conf
+# Create default nginx configuration if it doesn't exist in the build
+RUN echo 'server { \
+    listen 80; \
+    root /usr/share/nginx/html; \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf
+
+# Try to copy nginx.conf if it exists, but don't fail if it doesn't
+COPY --from=build /app/nginx.conf /etc/nginx/conf.d/default.conf 2>/dev/null || true
 
 # Copy built static files from build stage
 COPY --from=build /app/build /usr/share/nginx/html
