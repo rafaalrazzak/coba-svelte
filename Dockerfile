@@ -5,7 +5,8 @@ WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package.json ./
-COPY bun.lock ./ 2>/dev/null || :
+# Copy lockfile if it exists (bun uses .lockb extension)
+COPY bun.lockb* ./ || true
 RUN bun install --frozen-lockfile
 
 # Copy source code and build the application
@@ -15,7 +16,7 @@ RUN bun run build
 # Production stage with Nginx to serve static files
 FROM nginx:alpine AS production
 
-# Create default nginx configuration if it doesn't exist in the build
+# Create default nginx configuration
 RUN echo 'server { \
     listen 80; \
     root /usr/share/nginx/html; \
@@ -23,9 +24,6 @@ RUN echo 'server { \
         try_files $uri $uri/ /index.html; \
     } \
 }' > /etc/nginx/conf.d/default.conf
-
-# Try to copy nginx.conf if it exists, but don't fail if it doesn't
-COPY --from=build /app/nginx.conf /etc/nginx/conf.d/default.conf 2>/dev/null || true
 
 # Copy built static files from build stage
 COPY --from=build /app/build /usr/share/nginx/html
