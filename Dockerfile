@@ -5,7 +5,7 @@ WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package.json ./
-COPY bun.lockb ./ 2>/dev/null || :
+COPY bun.lock ./ 2>/dev/null || :
 RUN bun install --frozen-lockfile
 
 # Copy source code and build the application
