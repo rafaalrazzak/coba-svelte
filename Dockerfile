@@ -6,8 +6,8 @@ WORKDIR /app
 # Copy package files and install dependencies
 COPY package.json ./
 # Copy lockfile if it exists (bun uses .lockb extension)
-COPY bun.lock* ./ || true
-RUN bun install --frozen-lockfile
+COPY bun.lock ./ 2>/dev/null || echo "No lockfile found"
+RUN bun install
 
 # Copy source code and build the application
 COPY . .
